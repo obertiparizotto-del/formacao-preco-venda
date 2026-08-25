@@ -5,7 +5,7 @@ Cópia editável reconstruída a partir do painel publicado e da planilha origin
 ## Recursos
 
 - Painel executivo de precificação
-- Cadastro e pesquisa de produtos
+- Cadastro e pesquisa única de produtos
 - Fichas técnicas, matérias-primas e embalagens
 - Formação de preço por markup
 - Simulações, tributos, GGF, tabelas e relatórios
@@ -18,4 +18,4 @@ npm install
 npm run dev
 ```
 
-A fonte de dados recuperada está em `app/products.json` e as regras interativas em `app/page.tsx`.
+Os 373 registros recuperados estão divididos em `app/data/products-*.json`. As regras interativas e a navegação ficam em `app/page.tsx`.
