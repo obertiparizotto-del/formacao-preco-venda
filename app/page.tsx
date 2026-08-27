@@ -39,6 +39,7 @@ import CommercialTable from "./commercial-table";
 import AnalysisCharts from "./analysis-charts";
 import Reports from "./reports";
 import AdminPortal, { ActiveCompanyLabel } from "./multi-company";
+import AuthGate from "./auth-gate";
 import DashboardInsights from "./dashboard-insights";
 import ProductsScreen from "./products-screen";
 import { saveDurableValue, useDurableState } from "./use-durable-state";
@@ -3212,7 +3213,7 @@ function GenericTab({ name }: { name: string }) {
     </section>
   );
 }
-export default function Home() {
+function AppHome() {
   const [active, setActive] = useState("Painel"),
     [menu, setMenu] = useState(false),
     [insideCompany, setInsideCompany] = useState(false),
@@ -3367,3 +3368,5 @@ export default function Home() {
     </div>
   );
 }
+
+export default function Home(){return <AuthGate><AppHome/></AuthGate>}

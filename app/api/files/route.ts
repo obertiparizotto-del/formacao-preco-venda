@@ -1,10 +1,12 @@
 import { supabaseConfigured, supabaseRequest } from "../../supabase-server";
+import { canAccessCompany, currentUser } from "../../supabase-auth-server";
 
 function clean(value:string){return value.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9._-]+/g,"-").replace(/-+/g,"-")}
 
 export async function POST(request:Request){
   if(!supabaseConfigured())return Response.json({error:"Armazenamento não configurado"},{status:503});
   const form=await request.formData(),file=form.get("file"),companyId=String(form.get("companyId")||"santo-brilho"),category=clean(String(form.get("category")||"geral"));
+  const user=await currentUser();if(!user||!await canAccessCompany(user,companyId))return Response.json({error:"Acesso não autorizado"},{status:401});
   if(!(file instanceof File))return Response.json({error:"Arquivo obrigatório"},{status:400});
   if(file.size>50*1024*1024)return Response.json({error:"O arquivo excede 50 MB"},{status:413});
   const path=`${clean(companyId)}/${category}/${Date.now()}-${clean(file.name)}`;
@@ -19,6 +21,7 @@ export async function POST(request:Request){
 export async function GET(request:Request){
   if(!supabaseConfigured())return Response.json({documents:[]});
   const companyId=new URL(request.url).searchParams.get("companyId")||"santo-brilho";
+  const user=await currentUser();if(!user||!await canAccessCompany(user,companyId))return Response.json({error:"Acesso não autorizado"},{status:401});
   const response=await supabaseRequest(`/rest/v1/documents?company_id=eq.${encodeURIComponent(companyId)}&select=id,category,file_name,mime_type,size_bytes,created_at&order=created_at.desc`);
   return Response.json({documents:response.ok?await response.json():[]});
 }

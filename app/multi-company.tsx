@@ -134,7 +134,7 @@ export default function AdminPortal() {
         </div>
         <div className="portal-account">
           <span>Oberti Parizotto · Administrador geral</span>
-          <a href="/signout-with-chatgpt?return_to=/">Encerrar sessão</a>
+          <a href="/api/auth/logout">Encerrar sessão</a>
         </div>
       </header>
       <main className="portal-content">

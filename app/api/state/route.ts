@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { savedStates } from "../../../db/schema";
 import { stateScope, supabaseConfigured, supabaseRequest } from "../../supabase-server";
+import { canAccessCompany, currentUser } from "../../supabase-auth-server";
 
 async function readSupabase(companyId:string,stateKey:string){
   const query=`company_id=eq.${encodeURIComponent(companyId)}&state_key=eq.${encodeURIComponent(stateKey)}&select=payload,updated_at&limit=1`;
@@ -28,6 +29,8 @@ export async function GET(request:Request){
   const key=new URL(request.url).searchParams.get("key")?.trim();
   if(!key)return Response.json({error:"Chave obrigatória"},{status:400});
   const company=request.headers.get("x-company-id"),scope=stateScope(key,company);
+  const user=await currentUser();
+  if(!user||!await canAccessCompany(user,scope.companyId))return Response.json({error:"Acesso não autorizado"},{status:401});
   if(supabaseConfigured())try{
     const remote=await readSupabase(scope.companyId,scope.stateKey);
     if(remote)return Response.json({value:remote.payload,updatedAt:remote.updated_at,storage:"supabase"});
@@ -43,6 +46,8 @@ export async function PUT(request:Request){
   const key=body.key?.trim();
   if(!key)return Response.json({error:"Chave obrigatória"},{status:400});
   const scope=stateScope(key,request.headers.get("x-company-id"));
+  const user=await currentUser();
+  if(!user||!await canAccessCompany(user,scope.companyId))return Response.json({error:"Acesso não autorizado"},{status:401});
   if(supabaseConfigured())try{
     await writeSupabase(scope.companyId,scope.stateKey,body.value);
     if(scope.companyId==="system"&&scope.stateKey==="system-companies-v1")await syncCompanies(body.value);
